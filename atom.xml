@@ -18,90 +18,26 @@
     <link href="http://guo0625.github.io/blog/2014/05/01/android/"/>
     <updated>2017-01-27T09:56:33+08:00</updated>
     <id>http://guo0625.github.io/blog/2014/05/01/android</id>
-    <content type="html"><![CDATA[<p>去年一月，我们的千年手游正式立项开工，到现在刚好一年。这一年经历许多，感悟良多，总结一下，与诸位分享。</p>
-
-<p>这一年杂七杂八做了挺多事情的，值得说一说的倒没多少。</p>
-
-<p>第一件值得分享的是，发现了一个arm mali texture compression tool(tct) mac版的bug，将一张png图片通过tct压缩成一张上半部分带rgb通道，下半部分带alpha通道的图片，压缩完成后，alpha值相对原始的alpha值，是偏小的。经过几番与arm开发的邮件沟通，发现是因为tct使用了较老版本的ImageMagick，手动替换最新版本，应该能够解决该问题。查看arm官网，这个问题应该依然没有修复，最新的tct版本还是能够重现bug的4.3。（注：tct 4.3 win版本并没有这个bug）</p>
-
-<!--more-->
-
-
-<p>第二件值得分享的是，自己花了一两周时间，弄了一个自定义的压缩方案，支持不解压就能够对压缩包内的文件的随机读取，而且该压缩包不能被市面上其他的解压程序解压，一定程度上保护了资源的安全。之所以需要自己来造这个轮子，一方面我们有资源压缩的需求，如果不对游戏内繁多的动画帧文件进行压缩，游戏最后的包大小轻轻松松就可以到一个G。另外还有安全方面的考虑，我们可不希望美术同学的劳动成果被外界轻松获取。第三，将所有资源文件打包成一个压缩包，实际上能够加快图片文件的读取速度。本来我想从网上找一个成熟的方案来实现的，可是找来找去，就是找不到，估计是因为安全原因，大家都不愿意共享实现细节，后来也有问过热血传奇手游的同学，也是说自己实现了一个，也不方便共享出来。无奈，只好自己操刀。研究过zip压缩格式后，发现弄一个自己的压缩方案，其实并不难，并不是要再去发明一下Phil Katz大神的压缩算法，只是把经过压缩后的数据按照自己的摆放方式摆放一遍，只要跟通用的zip格式不一样，其他人就不能用外部的解压程序解压了，除非他们花很大的成本去摸索出规律来。对我们来说，这种方案是相对安全的。最后，再来吐槽一下cocos2dx官方读取zip压缩文件的设计思路，每读取一个压缩包内文件，都要new一个zip压缩包的文件句柄，然后遍历一遍压缩源文件目录区，直到找到目标文件为止，这样导致读取不同文件所花的时间是不一样的，而且相对很慢。为什么不在第一次加载zip压缩包时，就将压缩包内文件的开始位置给记录下来，下次访问时，就不需要重新去遍历文件目录区了。另外，官方并不支持对apk包内的zip包进行读取，apk包本身也是一个zip包。我看网上有方案是把zip包拷贝到手机的sd卡上，然后再进行读取。实际上这是没有必要的，一般情况下，cocos通过第三方的unzip模块对zip包进行读取，unzip模块支持自定义的io api，官方只使用通用文件api，我们只要在读取apk内文件时，使用android的io api即可。</p>
-
-<p>第三件事情并不是涉及技术。是关于对加班的理解。从在九城开始，自己对加班一直比较反感，觉得只要项目管理得当，就能够避免加班，很多情况的加班都是可以避免的，只要平时多努力，就不会把事情拖到很晚才去完成。这一年，对于加班有了更多的理解，因为发现公司内很多优秀的同学，并不是因为平时效率不高，事情做不完，才留下来加班，而是为了让项目更快更好的完成，为了多做一点，才留下来加班。热血传奇手游的技术担当，我发现他基本每周7天都在办公室，他工作效率不高？技术不好？我是不信的。我们这个行业藏龙卧虎，竞争激烈，不跑快一点，淘汰的就是自己。那些比我聪明的人比我更努力，还有什么理由不努力一点呢。之前一直觉得自己受不了太高强度的加班，这一年下来，差不多9个月是996，最后2个月接近997，很欣慰，自己至少坚持下来了。</p>
-
-<p>下面想说一些项目中踩过坑后的感悟，感兴趣的话，可以看一下。</p>
-
-<p>简单可依赖。这句话好像第一次是从百度那边听来的，虽然百度名声不咋地，但是我这一年对于这句话却深有感触，深表认同。这一年，不晓得对游戏中的ai重构了多少遍，最后一两个月还在重构呢，每次重构，都希望代码能够变得更简单，逻辑越清楚明了，就越不容易出错。因为逻辑太复杂而导致的bug，可不是第一次碰到了。</p>
-
-<p>对性能有要求的部分，最好用C++实现，而不是用解释型语言。最初我们全部用Lua实现了游戏ai部分，直到开始压力测试，当人数到1000多，最好的android机器也跑不动。通过一番痛苦的评估才发现，Lua和C++的效率实际上是想去甚远的，即使LuaJIT宣传说比官方的Lua实现效率有几倍的提升，但是跟C++比起来还是差很多。比如创建1万个空的lua table，在好的android机器会需要30ms，在差一些的机器上，甚至超过100ms。如果对1000个角色进行更新，每次更新会有10个新表创建，那就需要创建一万个表，即使全部是空表，最好的android机也无法流畅运行。另外，win上和andorid上创建空表的速度差别很大，在win上，创建100万个空表，才需要几毫秒。</p>
-
-<p>有性能要求的游戏，压力测试应该早开始，且伴随游戏开发，不断进行。这样的话，如果有性能瓶颈出现，能够早发现，早解决。如果等到最后发现，可不是解bug这么简单了，而是需要推翻重来。</p>
-
-<p>开始性能优化时，应该先对程序进行性能分析，找到瓶颈点，有的放矢。而不能想当然觉得某块代码性能不行，立刻开始优化，往往最后优化完成，总体性能并没有很大的提升。很多时候，优化方法没有问题，而是那块代码根本就没有被执行几次，速度再快，对总体性能也没什么影响。</p>
-
-<p>好的测试工程师真的很重要。一个好的测试能够帮助开发发现很多隐藏的问题，督促开发更加严谨的完成任务。如果测试不是很负责，会让某些不自觉的开发放松警惕，敷衍了事，因为即使他任务没弄好，测试也发现不了嘛。去年十一月十二月的公司评测，真是让我提心吊胆，本来以为某些功能应该没bug了，结果被打脸了一次又一次。真是很感谢他们。</p>
-
-<p>感悟就这么多，谢谢诸位观看，今天是大年三十，新年快乐。</p>
-]]></content>
+    <content type="html"><![CDATA[<blockquote><p>今天公司要测试计费的sdk，于是心血来潮打算逆向一下公司的sdk。将sdk中的支付金额和渠道号更换，查看sdk的计费原理。</p></blockquote>]]></content>
   </entry>
   
-  <entry>
+  <!-- <entry>
     <title type="html"><![CDATA[一点项目管理感悟]]></title>
     <link href="http://guo0625.github.io/blog/2016/08/22/think-on-management/"/>
     <updated>2016-08-22T08:30:50+08:00</updated>
     <id>http://guo0625.github.io/blog/2016/08/22/think-on-management</id>
-    <content type="html"><![CDATA[<p>最近正在看《大教堂与集市》这本书，书中所提倡的集市模式令我深有感触。</p>
-
-<p>集市模式的概念有很多方面，其中一点就是强调“齐心协力”，一般一个开源项目，就像一个自由市场，大家依靠兴趣集结在一起，这个时候“命令模式”是行不通的，系统中每个个体都追求自身效用的最大化，在其共生的过程中，能够自然建立一种具备自我纠错能力的秩序，这个所谓的“共识原则”达成的秩序往往比集中式规划都要精妙和高效。</p>
-
-<!--more-->
-
-
-<p>从半年前开始，我就尝试在项目中使用敏捷开发，期望能够达到集市模式类似的高效。敏捷开发强调沟通的及时，成员的自主能动性。为了能够实现这样的效果，我尝试在团队中营造自由的氛围，分享的氛围，给予自由度让每个组员都能找到自己合适的工作节奏，能够保证目标的完成，同时又不会使得自己过度劳累。不强制加班，但是如果碰到未预料的问题或者未预见的工作会减慢进程，期望团队会通过加班来完成预期目标。如果任务分配的不饱和，且有富余时间，期望组员会主动take一些无主的任务。</p>
-
-<p>坦言说，外部环境差不多都有了，我们使用Trac进行任务单的管理和跟踪，使用wiki和blog分享项目经验和知识，不定期公司有各种类型的培训。组员也有完成任务的自由度，我们每两周做一次任务规划，所有任务都会被登记如trac中进行跟踪，有些任务会指定责任人，有些任务则等待组员在完成计划任务后主动认领。</p>
-
-<p>但是从半年的实践来看，我们的尝试并不成功，并没有达到敏捷开发或者集市模式这样的高效。每当一个周期接近结束时，无论之前计划是否饱和，总会有任务尚未完成，几乎每次都需要我来催促组员去完成计划任务。有些时候任务无法在规定时间内完成，组员也不愿意加班完成。</p>
-
-<p>为什么会这样，为什么始终无法齐心协力？下面是我最近归纳的：</p>
-
-<ol>
-<li><p>开源项目的参与者大多都是自愿的，依靠兴趣爱好团结在一起的，大家有做事情的主动性，不用发布命令，也会自主的去做事情，如果给他们发布命令，让他们做不喜欢做的功能，反而打击积极性。但是公司内部的项目却不一样，大家并不都是靠兴趣或者热爱项目而坐在一起的，更多的是工作需要而已，对所做的游戏没有多少热爱，就不能指望组员会主动的去完成更多的事情，让自己的游戏变得更好。</p></li>
-<li><p>开源项目对所有人开放，这就意味着所有感兴趣的开发都能参与，能力强的能够做多一些，能力弱的可以参与少一些，时间多的可以做多一些，时间少的可以做少一些。但是公司内的项目却没有这样的条件，没有这么多的人力资源可以支配，也无法保证每个组员能力都很出众，却需要每个组员都深入参与其中。一般能力出众的人能够同时处理很多事情，比如说一个周期分配了10个任务，他能够根据优先级，合理分配时间，完成所有任务。但是不是所有的人都可以做到这样，曾经有个组员跟我抱怨过，他身上有太多的任务，他期望做一件任务然后再分配其他任务。</p></li>
-</ol>
-
-
-<p>集市模式虽好，但并不是所有情况下都能发挥高效。或许Linux作者林纳斯的亲身经历能给一点佐证。在林纳斯的自传《只是为了好玩》中有段话：虽然我对Linux项目的管理风格赢得了媒体的赞许，但我再全美达的那段短暂的管理工作，却是无可推诿的失败。当时他们认定我该带领一个开发者团队，我搞砸了。要是有谁冒险进入我那个垃圾堆似的办公室，他就会知道，我在这方面毫无头绪。每周的进度例会、工作回顾、工作规划，我都没办法驾驭。三个月之后，我对Linux项目的管理风格除了得到记者们的赞誉之外，显然对全美达没有带来任何好处。</p>
-]]></content>
-  </entry>
+    <content type="html"><![CDATA[<p>最近正在看《大教堂与集市》这本书，书中所提倡的集市模式令我深有感触。</p>]]>
+    </content>
+  </entry> -->
   
-  <entry>
+  <!-- <entry>
     <title type="html"><![CDATA[解决Jenkins中Git提交记录乱码的问题]]></title>
     <link href="http://guo0625.github.io/blog/2016/03/13/fix-messy-code-of-git-commit-in-jenkins/"/>
     <updated>2016-03-13T10:08:45+08:00</updated>
     <id>http://guo0625.github.io/blog/2016/03/13/fix-messy-code-of-git-commit-in-jenkins</id>
-    <content type="html"><![CDATA[<p>在为项目搭建持续集成环境时，碰到了git记录乱码的问题。</p>
-
-<p>方法一：
-网上有个解决方案，是修改jenkins.xml文件，不过这个方法并没有解决git记录乱码的问题（方法如下）。
-x:\Jenkins\jenkins.xml 新增蓝色粗体标记参数(-Dfile.encoding=utf-8)，然后重启Jenkins服务，完毕！</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='c'><span class='line'><span class="o">&lt;</span><span class="n">arguments</span><span class="o">&gt;-</span><span class="n">Xrs</span> <span class="o">-</span><span class="n">Xmx256m</span> <span class="o">-</span><span class="n">Dfile</span><span class="p">.</span><span class="n">encoding</span><span class="o">=</span><span class="n">utf</span><span class="o">-</span><span class="mi">8</span> <span class="o">-</span><span class="n">Dhudson</span><span class="p">.</span><span class="n">lifecycle</span><span class="o">=</span><span class="n">hudson</span><span class="p">.</span><span class="n">lifecycle</span><span class="p">.</span><span class="n">WindowsServiceLifecycle</span> <span class="o">-</span><span class="n">jar</span> <span class="err">“</span><span class="o">%</span><span class="n">BASE</span><span class="o">%</span><span class="err">\</span><span class="n">jenkins</span><span class="p">.</span><span class="n">war</span><span class="err">”</span> <span class="err">–</span><span class="n">httpPort</span><span class="o">=</span><span class="mi">8080</span><span class="o">&lt;/</span><span class="n">arguments</span><span class="o">&gt;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>方法二：
-后来尝试修改本地git的设置，修改logOutputEncoding为gbk，顺利解决jenkins中git记录乱码的问题。</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='c'><span class='line'><span class="err">$</span><span class="n">git</span> <span class="n">config</span> <span class="o">--</span><span class="n">global</span> <span class="n">i18n</span><span class="p">.</span><span class="n">logOutputEncoding</span> <span class="n">gbk</span>
-</span></code></pre></td></tr></table></div></figure>
-
-]]></content>
-  </entry>
+    <content type="html"><![CDATA[<p>在为项目搭建持续集成环境时，碰到了git记录乱码的问题。</p>]]>
+    </content>
+  </entry> -->
   
   <entry>
     <title type="html"><![CDATA[解决Texturepacker命令行无法在Jenkins下使用的问题]]></title>
