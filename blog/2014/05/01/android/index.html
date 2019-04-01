@@ -1,23 +1,25 @@
-
 <!DOCTYPE html>
 <!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
 <!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
-<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!-->
+<html class="no-js" lang="en">
+<!--<![endif]-->
+
 <head>
   <meta charset="utf-8">
   <title>初试android逆向工程</title>
   <meta name="author" content="肖申克的九叔">
 
-  
+
   <meta name="description" content="今天公司要测试计费的sdk，于是心血来潮打算逆向一下公司的sdk。将sdk中的支付金额和渠道号更换，查看sdk的计费原理。 &hellip;">
-  
+
 
   <!-- http://t.co/dKP3o1e -->
   <meta name="HandheldFriendly" content="True">
   <meta name="MobileOptimized" content="320">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  
+
   <link rel="canonical" href="http://guo0625.github.io/blog/2014/05/01/android">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
@@ -27,16 +29,16 @@
   <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
   <script src="/javascripts/octopress.js" type="text/javascript"></script>
   <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
-<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
-<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+  <link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+  <link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
 
-  
+
   <script type="text/javascript">
     var _gaq = _gaq || [];
     _gaq.push(['_setAccount', 'UA-48109768-1']);
     _gaq.push(['_trackPageview']);
 
-    (function() {
+    (function () {
       var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
       ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
       var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
@@ -46,45 +48,46 @@
 
 </head>
 
-<body   >
-  <header role="banner"><hgroup>
-  <h1><a href="/">编程小站</a></h1>
-  
-    <h2>我的编程分享</h2>
-  
-</hgroup>
+<body>
+  <header role="banner">
+    <hgroup>
+      <h1><a href="/">编程小站</a></h1>
 
-</header>
-  <nav role="navigation"><ul class="subscription" data-subscription="rss">
-  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
-  
-</ul>
-  
-<form action="http://google.com/search" method="get">
-  <fieldset role="search">
-    <input type="hidden" name="q" value="site:guo0625.github.io" />
-    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
-  </fieldset>
-</form>
-  
-<ul class="main-navigation">
-  <li><a href="/">Blog</a></li>
-  <li><a href="/blog/archives">Archives</a></li>
-</ul>
+      <h2>我的编程分享</h2>
 
-</nav>
+    </hgroup>
+
+  </header>
+  <nav role="navigation">
+    <ul class="subscription" data-subscription="rss">
+      <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+
+    </ul>
+
+    <form action="http://google.com/search" method="get">
+      <fieldset role="search">
+        <input type="hidden" name="q" value="site:guo0625.github.io" />
+        <input class="search" type="text" name="q" results="0" placeholder="Search" />
+      </fieldset>
+    </form>
+
+    <ul class="main-navigation">
+      <li><a href="/">Blog</a></li>
+      <li><a href="/blog/archives">Archives</a></li>
+    </ul>
+
+  </nav>
   <div id="main">
     <div id="content">
       <div>
-<article class="hentry" role="article">
-  
-  <header>
-    
-      <h1 class="entry-title">初试android逆向工程</h1>
-    
-    
-      <p class="meta">
-        
+        <article class="hentry" role="article">
+
+          <header>
+
+            <h1 class="entry-title">初试android逆向工程</h1>
+
+
+            <p class="meta">
 
 
 
@@ -93,32 +96,38 @@
 
 
 
-  
 
 
-<time datetime="2017-01-27T09:56:33+08:00" pubdate data-updated="true"></time>
-        
-           | <a href="#disqus_thread"
-             data-disqus-identifier="http://guo0625.github.io">Comments</a>
-        
-      </p>
-    
-  </header>
 
 
-<div class="entry-content">      
-  <p>今天公司要测试计费的sdk，于是心血来潮打算逆向一下公司的sdk。将sdk中的支付金额和渠道号更换，查看sdk的计费原理。</p>
+              <time datetime="2017-01-27T09:56:33+08:00" pubdate data-updated="true"></time>
 
-<p>首先，我是android逆向的小白,谷歌到一篇我自认为不错的<a href="https://techstarspace.wordpress.com/2015/05/04/reverse-engineering-3-dex2jar-with-jd-gui-decompiler/">教程</a>，按照这篇操作下来，你就可以查看apk文件的java源码了。同时也可以参考这篇<a href="http://blog.csdn.net/wirelessqa/article/details/8997168">教程</a></p>
+              | <a href="#disqus_thread" data-disqus-identifier="http://guo0625.github.io">Comments</a>
 
-<p>有时你环境搭好后，运行命令可能会有如下错误：</p>
-<div class="highlight"><pre><code class="language-matlab" data-lang="matlab"><span class="o">-</span><span class="n">bash</span><span class="p">:</span> <span class="o">./</span><span class="n">d2j</span><span class="o">-</span><span class="n">dex2jar</span><span class="p">.</span><span class="n">sh</span><span class="p">:</span> <span class="n">Permission</span> <span class="n">denied</span>
-</code></pre></div>
-<p>在终端输入命令，修改执行脚本的权限，也可以修改所有的文件权限:</p>
-<div class="highlight"><pre><code class="language-matlab" data-lang="matlab">$ <span class="n">sudo</span> <span class="n">chmod</span> <span class="n">a</span><span class="o">+</span><span class="n">x</span> <span class="o">*</span> 或 $ <span class="n">sudo</span> <span class="n">chmod</span> <span class="n">a</span><span class="o">+</span><span class="n">x</span> <span class="n">d2j</span><span class="o">-</span><span class="n">dex2jar</span>
-</code></pre></div>
-<p>权限修改后，又报出如下错误：</p>
-<div class="highlight"><pre><code class="language-matlab" data-lang="matlab"><span class="n">localhost</span><span class="p">:</span><span class="n">dex2jar</span><span class="o">-</span><span class="mf">2.0</span> <span class="n">username</span>$ <span class="o">./</span><span class="n">d2j</span><span class="o">-</span><span class="n">dex2jar</span><span class="p">.</span><span class="n">sh</span> <span class="n">classes</span><span class="p">.</span><span class="n">dex</span>
+            </p>
+
+          </header>
+
+
+          <div class="entry-content">
+            <p>今天公司要测试计费的sdk，于是心血来潮打算逆向一下公司的sdk。将sdk中的支付金额和渠道号更换，查看sdk的计费原理。</p>
+
+            <p>首先，我是android逆向的小白,谷歌到一篇我自认为不错的<a href="https://techstarspace.wordpress.com/2015/05/04/reverse-engineering-3-dex2jar-with-jd-gui-decompiler/">教程</a>，按照这篇操作下来，你就可以查看apk文件的java源码了。同时也可以参考这篇<a
+                href="http://blog.csdn.net/wirelessqa/article/details/8997168">教程</a></p>
+
+            <p>有时你环境搭好后，运行命令可能会有如下错误：</p>
+            <div class="highlight">
+              <pre><code class="language-matlab" data-lang="matlab"><span class="o">-</span><span class="n">bash</span><span class="p">:</span> <span class="o">./</span><span class="n">d2j</span><span class="o">-</span><span class="n">dex2jar</span><span class="p">.</span><span class="n">sh</span><span class="p">:</span> <span class="n">Permission</span> <span class="n">denied</span>
+</code></pre>
+            </div>
+            <p>在终端输入命令，修改执行脚本的权限，也可以修改所有的文件权限:</p>
+            <div class="highlight">
+              <pre><code class="language-matlab" data-lang="matlab">$ <span class="n">sudo</span> <span class="n">chmod</span> <span class="n">a</span><span class="o">+</span><span class="n">x</span> <span class="o">*</span> 或 $ <span class="n">sudo</span> <span class="n">chmod</span> <span class="n">a</span><span class="o">+</span><span class="n">x</span> <span class="n">d2j</span><span class="o">-</span><span class="n">dex2jar</span>
+</code></pre>
+            </div>
+            <p>权限修改后，又报出如下错误：</p>
+            <div class="highlight">
+              <pre><code class="language-matlab" data-lang="matlab"><span class="n">localhost</span><span class="p">:</span><span class="n">dex2jar</span><span class="o">-</span><span class="mf">2.0</span> <span class="n">username</span>$ <span class="o">./</span><span class="n">d2j</span><span class="o">-</span><span class="n">dex2jar</span><span class="p">.</span><span class="n">sh</span> <span class="n">classes</span><span class="p">.</span><span class="n">dex</span>
 <span class="n">Exception</span> <span class="n">in</span> <span class="n">thread</span> &quot;<span class="n">main</span>&quot; <span class="n">java</span><span class="p">.</span><span class="n">lang</span><span class="p">.</span><span class="n">UnsupportedClassVersionError</span><span class="p">:</span> <span class="n">com</span><span class="o">/</span><span class="n">googlecode</span><span class="o">/</span><span class="n">dex2jar</span><span class="o">/</span><span class="n">tools</span><span class="o">/</span><span class="n">Dex2jarCmd</span> <span class="p">:</span> <span class="n">Unsupported</span> <span class="n">major</span><span class="p">.</span><span class="n">minor</span> <span class="n">version</span> <span class="mf">51.0</span>
     <span class="n">at</span> <span class="n">java</span><span class="p">.</span><span class="n">lang</span><span class="p">.</span><span class="n">ClassLoader</span><span class="p">.</span><span class="n">defineClass1</span><span class="p">(</span><span class="n">Native</span> <span class="n">Method</span><span class="p">)</span>
     <span class="n">at</span> <span class="n">java</span><span class="p">.</span><span class="n">lang</span><span class="p">.</span><span class="n">ClassLoader</span><span class="p">.</span><span class="n">defineClassCond</span><span class="p">(</span><span class="n">ClassLoader</span><span class="p">.</span><span class="n">java</span><span class="p">:</span><span class="mi">631</span><span class="p">)</span>
@@ -132,28 +141,32 @@
     <span class="n">at</span> <span class="n">java</span><span class="p">.</span><span class="n">lang</span><span class="p">.</span><span class="n">ClassLoader</span><span class="p">.</span><span class="n">loadClass</span><span class="p">(</span><span class="n">ClassLoader</span><span class="p">.</span><span class="n">java</span><span class="p">:</span><span class="mi">306</span><span class="p">)</span>
     <span class="n">at</span> <span class="n">sun</span><span class="p">.</span><span class="n">misc</span><span class="p">.</span><span class="n">Launcher</span>$<span class="n">AppClassLoader</span><span class="p">.</span><span class="n">loadClass</span><span class="p">(</span><span class="n">Launcher</span><span class="p">.</span><span class="n">java</span><span class="p">:</span><span class="mi">301</span><span class="p">)</span>
     <span class="n">at</span> <span class="n">java</span><span class="p">.</span><span class="n">lang</span><span class="p">.</span><span class="n">ClassLoader</span><span class="p">.</span><span class="n">loadClass</span><span class="p">(</span><span class="n">ClassLoader</span><span class="p">.</span><span class="n">java</span><span class="p">:</span><span class="mi">247</span><span class="p">)</span>
-</code></pre></div>
-<p>这说明你的jdk版本太低，可能低于1.7，不支持现在的操作。你有两个选择：一是、升级jdk；二是、选用低版本的dex2jar。（我遇到了上述问题，鉴于升级jdk可能带来其他环境的更改选择了<a href="http://sourceforge.net/projects/dex2jar/">dex2jar-0.0.9.15</a>这个版本）</p>
+</code></pre>
+            </div>
+            <p>这说明你的jdk版本太低，可能低于1.7，不支持现在的操作。你有两个选择：一是、升级jdk；二是、选用低版本的dex2jar。（我遇到了上述问题，鉴于升级jdk可能带来其他环境的更改选择了<a href="http://sourceforge.net/projects/dex2jar/">dex2jar-0.0.9.15</a>这个版本）</p>
 
-<p>上述只是可以将class.dex转换成jar文件。</p>
+            <p>上述只是可以将class.dex转换成jar文件。</p>
 
-<p>命令如下：</p>
-<div class="highlight"><pre><code class="language-matlab" data-lang="matlab"><span class="n">localhost</span><span class="p">:</span><span class="n">dex2jar</span><span class="o">-</span><span class="mf">0.0</span><span class="p">.</span><span class="mf">9.15</span> <span class="n">username</span>$ <span class="o">./</span><span class="n">d2j</span><span class="o">-</span><span class="n">dex2jar</span><span class="p">.</span><span class="n">sh</span> <span class="n">classes</span><span class="p">.</span><span class="n">dex</span> 
+            <p>命令如下：</p>
+            <div class="highlight">
+              <pre><code class="language-matlab" data-lang="matlab"><span class="n">localhost</span><span class="p">:</span><span class="n">dex2jar</span><span class="o">-</span><span class="mf">0.0</span><span class="p">.</span><span class="mf">9.15</span> <span class="n">username</span>$ <span class="o">./</span><span class="n">d2j</span><span class="o">-</span><span class="n">dex2jar</span><span class="p">.</span><span class="n">sh</span> <span class="n">classes</span><span class="p">.</span><span class="n">dex</span> 
 <span class="n">dex2jar</span> <span class="n">classes</span><span class="p">.</span><span class="n">dex</span> <span class="o">-&gt;</span> <span class="n">classes</span><span class="o">-</span><span class="n">dex2jar</span><span class="p">.</span><span class="n">jar</span>
 <span class="n">localhost</span><span class="p">:</span><span class="n">dex2jar</span><span class="o">-</span><span class="mf">0.0</span><span class="p">.</span><span class="mf">9.15</span> <span class="n">username</span>$ 
-</code></pre></div>
-<p>即可在目录下看到classes-dex2jar.jar文件。</p>
+</code></pre>
+            </div>
+            <p>即可在目录下看到classes-dex2jar.jar文件。</p>
 
-<p>而查看jar文件需要用到jd-gui这个软件，直接下载安装即可。导入jar文件就可以查看，也可以将java代码保存。</p>
+            <p>而查看jar文件需要用到jd-gui这个软件，直接下载安装即可。导入jar文件就可以查看，也可以将java代码保存。</p>
 
-<p>至此，查看apk源码的操作已介绍完毕。</p>
+            <p>至此，查看apk源码的操作已介绍完毕。</p>
 
-<p>接下来便是，解析出manifest文件，通过使用<a href="http://connortumbleson.com/apktool/googlecode/">apkTool</a>工具可以将apk文件解析。</p>
+            <p>接下来便是，解析出manifest文件，通过使用<a href="http://connortumbleson.com/apktool/googlecode/">apkTool</a>工具可以将apk文件解析。</p>
 
-<p>apktool可能也会遇到上述与dex2jar相似的问题，无非是修改权限、换版本照着做就可以了。apktool和apktool.jar放在/usr/local/bin目录下，可以使用apktool命令。</p>
+            <p>apktool可能也会遇到上述与dex2jar相似的问题，无非是修改权限、换版本照着做就可以了。apktool和apktool.jar放在/usr/local/bin目录下，可以使用apktool命令。</p>
 
-<p>执行命令解析apk文件</p>
-<div class="highlight"><pre><code class="language-matlab" data-lang="matlab"><span class="n">localhost</span><span class="p">:</span><span class="n">sdkPay</span> <span class="n">username</span>$ <span class="n">apktool</span> <span class="n">d</span>  <span class="n">liantongstar</span><span class="p">.</span><span class="n">apk</span> 
+            <p>执行命令解析apk文件</p>
+            <div class="highlight">
+              <pre><code class="language-matlab" data-lang="matlab"><span class="n">localhost</span><span class="p">:</span><span class="n">sdkPay</span> <span class="n">username</span>$ <span class="n">apktool</span> <span class="n">d</span>  <span class="n">liantongstar</span><span class="p">.</span><span class="n">apk</span> 
 <span class="n">I</span><span class="p">:</span> <span class="n">Baksmaling</span><span class="c">...</span>
 <span class="n">I</span><span class="p">:</span> <span class="n">Loading</span> <span class="n">resource</span> <span class="n">table</span><span class="c">...</span>
 <span class="n">I</span><span class="p">:</span> <span class="n">Loaded</span><span class="p">.</span>
@@ -165,13 +178,15 @@
 <span class="n">I</span><span class="p">:</span> <span class="n">Decoding</span> <span class="n">values</span> <span class="o">*/*</span> <span class="n">XMLs</span><span class="c">...</span>
 <span class="n">I</span><span class="p">:</span> <span class="n">Done</span><span class="p">.</span>
 <span class="n">I</span><span class="p">:</span> <span class="n">Copying</span> <span class="n">assets</span> <span class="n">and</span> <span class="n">libs</span><span class="c">...</span>
-</code></pre></div>
-<p>在相同目录下生成与apk同名的文件夹。</p>
+</code></pre>
+            </div>
+            <p>在相同目录下生成与apk同名的文件夹。</p>
 
-<p>然后开始修改源码中的计费信息，通过对照jar文件中的源码，以及smali文件中相应的代码，来修改！再次不多说。</p>
+            <p>然后开始修改源码中的计费信息，通过对照jar文件中的源码，以及smali文件中相应的代码，来修改！再次不多说。</p>
 
-<p>修改后要重新打包成apk文件，执行命令如下：</p>
-<div class="highlight"><pre><code class="language-matlab" data-lang="matlab"><span class="n">localhost</span><span class="p">:</span><span class="n">sdkPay</span> <span class="n">username</span>$ <span class="n">apktool</span> <span class="n">b</span> &quot;<span class="n">test</span>&quot; <span class="n">test</span><span class="p">.</span><span class="n">apk</span> 
+            <p>修改后要重新打包成apk文件，执行命令如下：</p>
+            <div class="highlight">
+              <pre><code class="language-matlab" data-lang="matlab"><span class="n">localhost</span><span class="p">:</span><span class="n">sdkPay</span> <span class="n">username</span>$ <span class="n">apktool</span> <span class="n">b</span> &quot;<span class="n">test</span>&quot; <span class="n">test</span><span class="p">.</span><span class="n">apk</span> 
 <span class="n">I</span><span class="p">:</span> <span class="n">Checking</span> <span class="n">whether</span> <span class="n">sources</span> <span class="n">has</span> <span class="n">changed</span><span class="c">...</span>
 <span class="n">I</span><span class="p">:</span> <span class="n">Smaling</span><span class="c">...</span>
 <span class="n">I</span><span class="p">:</span> <span class="n">Checking</span> <span class="n">whether</span> <span class="n">resources</span> <span class="n">has</span> <span class="n">changed</span><span class="c">...</span>
@@ -179,80 +194,86 @@
 <span class="n">I</span><span class="p">:</span> <span class="n">Copying</span> <span class="n">libs</span><span class="c">...</span>
 <span class="n">I</span><span class="p">:</span> <span class="n">Building</span> <span class="n">apk</span> <span class="n">file</span><span class="c">...</span>
 <span class="n">localhost</span><span class="p">:</span><span class="n">sdkPay</span> <span class="n">username</span>$
-</code></pre></div>
-<p>重新签名，安装测试即可。</p>
-<div class="highlight"><pre><code class="language-matlab" data-lang="matlab"><span class="n">localhost</span><span class="p">:</span><span class="n">sdkPay</span> <span class="n">username</span>$ <span class="n">jarsigner</span> <span class="o">-</span><span class="n">verbose</span> <span class="o">-</span><span class="n">keystore</span> <span class="n">my</span><span class="p">.</span><span class="n">keystore</span> <span class="o">-</span><span class="n">signedjar</span> <span class="n">newTest</span><span class="p">.</span><span class="n">apk</span> <span class="o">-</span><span class="n">digestalg</span> <span class="n">SHA1</span> <span class="o">-</span><span class="n">sigalg</span> <span class="n">MD5withRSA</span>  <span class="n">test</span><span class="p">.</span><span class="n">apk</span>  <span class="n">my</span><span class="p">.</span><span class="n">keystore</span>
-</code></pre></div>
-<p><a href="http://yunpan.cn/cjeWg8yfpnzjc">mac下资源下载</a> 提取码：5cfb</p>
-</div>
+</code></pre>
+            </div>
+            <p>重新签名，安装测试即可。</p>
+            <div class="highlight">
+              <pre><code class="language-matlab" data-lang="matlab"><span class="n">localhost</span><span class="p">:</span><span class="n">sdkPay</span> <span class="n">username</span>$ <span class="n">jarsigner</span> <span class="o">-</span><span class="n">verbose</span> <span class="o">-</span><span class="n">keystore</span> <span class="n">my</span><span class="p">.</span><span class="n">keystore</span> <span class="o">-</span><span class="n">signedjar</span> <span class="n">newTest</span><span class="p">.</span><span class="n">apk</span> <span class="o">-</span><span class="n">digestalg</span> <span class="n">SHA1</span> <span class="o">-</span><span class="n">sigalg</span> <span class="n">MD5withRSA</span>  <span class="n">test</span><span class="p">.</span><span class="n">apk</span>  <span class="n">my</span><span class="p">.</span><span class="n">keystore</span>
+</code></pre>
+            </div>
+            <p><a href="http://yunpan.cn/cjeWg8yfpnzjc">mac下资源下载</a> 提取码：5cfb</p>
+          </div>
 
 
-  <footer>
-    <p class="meta">
-      
-  
-
-<span class="byline author vcard">Posted by <span class="fn">肖申克的九叔</span></span>
-
-      
+          <footer>
+            <p class="meta">
 
 
 
-
+              <span class="byline author vcard">Posted by <span class="fn">肖申克的九叔</span></span>
 
 
 
 
-  
 
 
-<time datetime="2017-01-27T09:56:33+08:00" pubdate data-updated="true"></time>
-      
 
 
-    </p>
-    
-      <div class="sharing">
-  
-  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://guo0625.github.io/blog/2014/05/01/android/" data-via="" data-counturl="http://guo0625.github.io/blog/2014/05/01/android/" >Tweet</a>
-  
-  
-  
-</div>
 
-    
-    <p class="meta">
-      
-        <a class="basic-alignment left" href="/blog/2014/05/01/think-on-management/" title="Previous Post: 重读《我二十一岁那年》— 史铁生">&laquo; 重读《我二十一岁那年》— 史铁生</a>
-      
-      
-    </p>
-  </footer>
-</article>
 
-  <section>
-    <h1>Comments</h1>
-    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
-</div>
-  </section>
 
-</div>
 
-<aside class="sidebar">
-  
-    <section>
-  <h1>Recent Posts</h1>
-  <ul id="recent_posts">
-    
-      <li class="post">
-        <a href="/blog/2014/05/01/android/">初试android逆向工程</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2014/05/01/think-on-management/">重读《我二十一岁那年》— 史铁生</a>
-      </li>
-    
-      <!-- <li class="post">
+
+              <time datetime="2017-01-27T09:56:33+08:00" pubdate data-updated="true"></time>
+
+
+
+            </p>
+
+            <div class="sharing">
+
+              <a href="//twitter.com/share" class="twitter-share-button" data-url="http://guo0625.github.io/blog/2014/05/01/android/" data-via=""
+                data-counturl="http://guo0625.github.io/blog/2014/05/01/android/">Tweet</a>
+
+
+
+            </div>
+
+
+            <p class="meta">
+
+              <a class="basic-alignment left" href="/blog/2014/05/01/think-on-management/" title="Previous Post: 重读《我二十一岁那年》— 史铁生">&laquo;
+                重读《我二十一岁那年》— 史铁生</a>
+
+
+            </p>
+          </footer>
+        </article>
+
+        <section>
+          <h1>Comments</h1>
+          <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments
+                powered by Disqus.</a></noscript>
+          </div>
+        </section>
+
+      </div>
+
+      <aside class="sidebar">
+
+        <section>
+          <h1>Recent Posts</h1>
+          <ul id="recent_posts">
+
+            <li class="post">
+              <a href="/blog/2014/05/01/android/">初试android逆向工程</a>
+            </li>
+
+            <li class="post">
+              <a href="/blog/2014/05/01/think-on-management/">重读《我二十一岁那年》— 史铁生</a>
+            </li>
+
+            <!-- <li class="post">
         <a href="/blog/2016/03/13/fix-messy-code-of-git-commit-in-jenkins/">解决Jenkins中Git提交记录乱码的问题</a>
       </li>
     
@@ -263,43 +284,44 @@
       <li class="post">
         <a href="/blog/2015/06/06/astar-path-finding/">A*寻路</a>
       </li> -->
-    
-  </ul>
-</section>
+
+          </ul>
+        </section>
 
 
 
 
 
-  
-</aside>
+
+      </aside>
 
 
     </div>
   </div>
-  <footer role="contentinfo"><p>
-  Copyright &copy; 2017 - 肖申克的九叔 -
-  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
-</p>
+  <footer role="contentinfo">
+    <p>
+      Copyright &copy; 2017 - 肖申克的九叔 -
+      <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+    </p>
 
-</footer>
-  
+  </footer>
 
-<script type="text/javascript">
-      var disqus_shortname = '肖申克的九叔';
-      
-        
-        // var disqus_developer = 1;
-        var disqus_identifier = 'http://guo0625.github.io/blog/2014/05/01/android/';
-        var disqus_url = 'http://guo0625.github.io/blog/2014/05/01/android/';
-        var disqus_script = 'embed.js';
-      
+
+  <script type="text/javascript">
+    var disqus_shortname = '肖申克的九叔';
+
+
+    // var disqus_developer = 1;
+    var disqus_identifier = 'http://guo0625.github.io/blog/2014/05/01/android/';
+    var disqus_url = 'http://guo0625.github.io/blog/2014/05/01/android/';
+    var disqus_script = 'embed.js';
+
     (function () {
       var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
       dsq.src = '//' + disqus_shortname + '.disqus.com/' + disqus_script;
       (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
     }());
-</script>
+  </script>
 
 
 
@@ -308,7 +330,7 @@
 
 
   <script type="text/javascript">
-    (function(){
+    (function () {
       var twitterWidgets = document.createElement('script');
       twitterWidgets.type = 'text/javascript';
       twitterWidgets.async = true;
@@ -322,4 +344,5 @@
 
 
 </body>
+
 </html>
